@@ -38,6 +38,23 @@ namespace To_Do_List.Controllers
             return CreatedAtRoute("GetTask", new { id = task.Id }, task);
         }
 
+        [HttpPost("addList")]
+        public IActionResult CreateMultiple([FromBody] List<Models.Task> tasks)
+        {
+            if (tasks == null || !tasks.Any())
+            {
+                return BadRequest();
+            }
+
+            TodoRepository.DeleteAll();
+
+            foreach (var task in tasks)
+            {
+                TodoRepository.Create(task);
+            }
+
+            return CreatedAtRoute("GetAllTasks", null, tasks);
+        }
 
         [HttpPut("{id}")]
         public IActionResult UpdateDescription(int Id, [FromBody] string updatedDescription)

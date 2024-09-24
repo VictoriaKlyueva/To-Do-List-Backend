@@ -9,5 +9,6 @@ namespace To_Do_List.Data.Repositories
         void Create(Models.Task item);
         void Update(Models.Task item);
         Models.Task Delete(int id);
+        void DeleteAll();
     }
 }

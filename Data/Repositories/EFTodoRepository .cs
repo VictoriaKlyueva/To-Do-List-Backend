@@ -14,33 +14,42 @@
             return Context.Tasks.Find(Id)!;
         }
 
-        public void Create(Models.Task item)
+        public void Create(Models.Task task)
         {
-            Context.Tasks.Add(item);
+            Context.Tasks.Add(task);
             Context.SaveChanges();
         }
 
         public void Update(Models.Task updatedTask)
         {
-            Models.Task currentItem = Get(updatedTask.Id);
-            currentItem.IsCompleted = updatedTask.IsCompleted;
-            currentItem.Description = updatedTask.Description;
+            Models.Task currentTask = Get(updatedTask.Id);
+            currentTask.IsCompleted = updatedTask.IsCompleted;
+            currentTask.Description = updatedTask.Description;
 
-            Context.Tasks.Update(currentItem);
+            Context.Tasks.Update(currentTask);
             Context.SaveChanges();
         }
 
         public Models.Task Delete(int Id)
         {
-            Models.Task todoItem = Get(Id);
+            Models.Task task = Get(Id);
 
-            if (todoItem != null)
+            if (task != null)
             {
-                Context.Tasks.Remove(todoItem);
+                Context.Tasks.Remove(task);
                 Context.SaveChanges();
             }
 
-            return todoItem!;
+            return task!;
+        }
+
+        public void DeleteAll()
+        {
+            foreach (var item in Context.Tasks)
+            {
+                Context.Tasks.Remove(item);
+            }
+            Context.SaveChanges();
         }
 
         public EFTodoRepository(EFTodoDBContext context)
