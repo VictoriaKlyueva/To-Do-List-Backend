@@ -8,13 +8,13 @@ namespace To_Do_List.Controllers
     {
         ITodoRepository TodoRepository;
 
-        [HttpGet(Name = "GetAllItems")]
+        [HttpGet(Name = "GetAllTasks")]
         public IEnumerable<Models.Task> Get()
         {
             return TodoRepository.Get();
         }
 
-        [HttpGet("{id}", Name = "GetTodoItem")]
+        [HttpGet("{id}", Name = "GetTask")]
         public IActionResult Get(int Id)
         {
             Models.Task task = TodoRepository.Get(Id);
@@ -35,25 +35,59 @@ namespace To_Do_List.Controllers
                 return BadRequest();
             }
             TodoRepository.Create(task);
-            return CreatedAtRoute("GetTodoItem", new { id = task.Id }, task);
+            return CreatedAtRoute("GetTask", new { id = task.Id }, task);
         }
 
+
         [HttpPut("{id}")]
-        public IActionResult Update(int Id, [FromBody] Models.Task updatedTodoItem)
+        public IActionResult UpdateDescription(int Id, [FromBody] string updatedDescription)
         {
-            if (updatedTodoItem == null || updatedTodoItem.Id != Id)
+            if (updatedDescription == null)
             {
-                return BadRequest();
+                return BadRequest("Хули описание пустое");
             }
 
-            var todoItem = TodoRepository.Get(Id);
-            if (todoItem == null)
+            var task = TodoRepository.Get(Id);
+            if (task == null)
             {
-                return NotFound();
+                return NotFound("Эм такого дела нету :/");
             }
 
-            TodoRepository.Update(updatedTodoItem);
-            return RedirectToRoute("GetAllItems");
+            Models.Task updatedTask = task;
+            updatedTask.Description = updatedDescription;
+
+            TodoRepository.Update(updatedTask);
+            return RedirectToRoute("GetAllTasks");
+        }
+
+        [HttpPut("complete/{id}")]
+        public IActionResult MarkTaskAsCompleted(int id)
+        {
+            var task = TodoRepository.Get(id);
+            if (task == null)
+            {
+                return NotFound("Эм такого дела нету :/");
+            }
+
+            task.IsCompleted = true;
+            TodoRepository.Update(task);
+
+            return CreatedAtRoute("GetTask", new { id = task.Id }, task);
+        }
+
+        [HttpPut("incomplete/{id}")]
+        public IActionResult MarkTaskAsIncomplete(int id)
+        {
+            var task = TodoRepository.Get(id);
+            if (task == null)
+            {
+                return NotFound("Эм такого дела нету :/");
+            }
+
+            task.IsCompleted = false;
+            TodoRepository.Update(task);
+
+            return CreatedAtRoute("GetTask", new { id = task.Id }, task);
         }
 
         [HttpDelete("{id}")]
@@ -63,7 +97,7 @@ namespace To_Do_List.Controllers
 
             if (deletedTodoItem == null)
             {
-                return BadRequest();
+                return BadRequest("Эм такого дела нету :/");
             }
 
             return new ObjectResult(deletedTodoItem);

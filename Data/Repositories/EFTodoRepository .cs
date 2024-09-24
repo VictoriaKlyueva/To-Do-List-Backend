@@ -20,11 +20,11 @@
             Context.SaveChanges();
         }
 
-        public void Update(Models.Task updatedTodoItem)
+        public void Update(Models.Task updatedTask)
         {
-            Models.Task currentItem = Get(updatedTodoItem.Id);
-            currentItem.IsCompleted = updatedTodoItem.IsCompleted;
-            currentItem.Description = updatedTodoItem.Description;
+            Models.Task currentItem = Get(updatedTask.Id);
+            currentItem.IsCompleted = updatedTask.IsCompleted;
+            currentItem.Description = updatedTask.Description;
 
             Context.Tasks.Update(currentItem);
             Context.SaveChanges();
