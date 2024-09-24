@@ -11,8 +11,8 @@ using To_Do_List.Data;
 namespace To_Do_List.Migrations
 {
     [DbContext(typeof(EFTodoDBContext))]
-    [Migration("20240924163852_Init")]
-    partial class Init
+    [Migration("20240924173152_BoolFlagForTask")]
+    partial class BoolFlagForTask
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -36,8 +36,8 @@ namespace To_Do_List.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("IsCompleted")
-                        .HasColumnType("integer");
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 

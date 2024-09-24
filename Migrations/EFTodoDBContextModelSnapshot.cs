@@ -33,8 +33,8 @@ namespace To_Do_List.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("IsCompleted")
-                        .HasColumnType("integer");
+                    b.Property<bool>("IsCompleted")
+                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
