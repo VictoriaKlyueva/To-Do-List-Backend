@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using To_Do_List.Data.Repositories;
+using To_Do_List.Models;
 
 namespace To_Do_List.Controllers
 {
@@ -57,11 +58,11 @@ namespace To_Do_List.Controllers
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateDescription(int Id, [FromBody] string updatedDescription)
+        public IActionResult UpdateDescription(int Id, [FromBody] Description updatedDescription)
         {
-            if (updatedDescription == null)
+            if (updatedDescription.DescriptionName == null)
             {
-                return BadRequest("Хули описание пустое");
+                return BadRequest("Аче описание пустое?");
             }
 
             var task = TodoRepository.Get(Id);
@@ -71,7 +72,7 @@ namespace To_Do_List.Controllers
             }
 
             Models.Task updatedTask = task;
-            updatedTask.Description = updatedDescription;
+            updatedTask.Description = updatedDescription.DescriptionName;
 
             TodoRepository.Update(updatedTask);
             return RedirectToRoute("GetAllTasks");

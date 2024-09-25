@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Azure;
+using Microsoft.EntityFrameworkCore;
 
 namespace To_Do_List.Data
 {
@@ -11,6 +12,13 @@ namespace To_Do_List.Data
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             optionsBuilder.UseNpgsql("Host=localhost;Port=5432;Database=TodoDB;Username=postgres;Password=3348");
+        }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Models.Task>()
+                .Property(p => p.Id)
+                .ValueGeneratedOnAdd();
         }
     }
 }
