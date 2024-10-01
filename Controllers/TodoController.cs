@@ -10,9 +10,23 @@ namespace To_Do_List.Controllers
         ITodoRepository TodoRepository;
 
         [HttpGet(Name = "GetAllTasks")]
-        public IEnumerable<Models.Task> Get()
+        public IActionResult Get()
         {
-            return TodoRepository.Get();
+            try
+            {
+                var tasks = TodoRepository.Get();
+                return Ok(tasks);
+            }
+            catch (Exception ex)
+            {
+                var errorResponse = new
+                {
+                    Success = false,
+                    Message = "Произошла ошибка при получении задач.",
+                    Error = ex.Message
+                };
+                return BadRequest(errorResponse);
+            }
         }
 
         [HttpGet("{id}", Name = "GetTask")]
