@@ -1,55 +1,54 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using To_Do_List.Data.Repositories;
-using To_Do_List.Models;
 
 namespace To_Do_List.Controllers
 {
     [Route("api/[controller]")]
-    public class TodoController : Controller
+    [ApiController]
+    public class TodoController : ControllerBase
     {
-        ITodoRepository TodoRepository;
+        private readonly ITodoRepository _todoRepository;
+
+        public TodoController(ITodoRepository todoRepository)
+        {
+            _todoRepository = todoRepository;
+        }
 
         [HttpGet(Name = "GetAllTasks")]
         public IActionResult Get()
         {
             try
             {
-                var tasks = TodoRepository.Get();
+                var tasks = _todoRepository.Get();
                 return Ok(tasks);
             }
             catch (Exception ex)
             {
-                var errorResponse = new
+                return BadRequest(new
                 {
                     Success = false,
                     Message = "Произошла ошибка при получении задач.",
                     Error = ex.Message
-                };
-                return BadRequest(errorResponse);
+                });
             }
         }
 
         [HttpGet("{id}", Name = "GetTask")]
-        public IActionResult Get(int Id)
+        public IActionResult Get(int id)
         {
-            Models.Task task = TodoRepository.Get(Id);
-
-            if (task == null)
-            {
-                return NotFound();
-            }
-
-            return new ObjectResult(task);
+            var task = _todoRepository.Get(id);
+            return task == null ? NotFound() : Ok(task);
         }
 
         [HttpPost]
         public IActionResult Create([FromBody] Models.Task task)
         {
-            if (task == null)
+            if (task == null || string.IsNullOrWhiteSpace(task.Title) || task.Title.Length < 4)
             {
-                return BadRequest();
+                return BadRequest("Название задачи обязательно и должно содержать минимум 4 символа");
             }
-            TodoRepository.Create(task);
+
+            _todoRepository.Create(task);
             return CreatedAtRoute("GetTask", new { id = task.Id }, task);
         }
 
@@ -58,86 +57,92 @@ namespace To_Do_List.Controllers
         {
             if (tasks == null || !tasks.Any())
             {
-                return BadRequest();
+                return BadRequest("Список задач не может быть пустым");
             }
-
-            TodoRepository.DeleteAll();
 
             foreach (var task in tasks)
             {
-                TodoRepository.Create(task);
+                if (string.IsNullOrWhiteSpace(task.Title) || task.Title.Length < 4)
+                {
+                    return BadRequest($"Задача с ID {task.Id} имеет недопустимое название");
+                }
+            }
+
+            _todoRepository.DeleteAll();
+
+            foreach (var task in tasks)
+            {
+                _todoRepository.Create(task);
             }
 
             return CreatedAtRoute("GetAllTasks", null, tasks);
         }
 
         [HttpPut("{id}")]
-        public IActionResult UpdateDescription(int Id, [FromBody] Description updatedDescription)
+        public IActionResult Update(int id, [FromBody] Models.Task updatedTask)
         {
-            if (updatedDescription.DescriptionName == null)
+            if (updatedTask == null || id != updatedTask.Id)
             {
-                return BadRequest("Аче описание пустое?");
+                return BadRequest("Неверные данные задачи");
             }
 
-            var task = TodoRepository.Get(Id);
-            if (task == null)
+            var existingTask = _todoRepository.Get(id);
+            if (existingTask == null)
             {
-                return NotFound("Эм такого дела нету :/");
+                return NotFound("Задача не найдена");
             }
 
-            Models.Task updatedTask = task;
-            updatedTask.Description = updatedDescription.DescriptionName;
+            if (string.IsNullOrWhiteSpace(updatedTask.Title) || updatedTask.Title.Length < 4)
+            {
+                return BadRequest("Название задачи обязательно и должно содержать минимум 4 символа");
+            }
 
-            TodoRepository.Update(updatedTask);
-            return RedirectToRoute("GetAllTasks");
+            _todoRepository.Update(updatedTask);
+            return Ok(updatedTask);
         }
 
         [HttpPut("complete/{id}")]
         public IActionResult MarkTaskAsCompleted(int id)
         {
-            var task = TodoRepository.Get(id);
+            var task = _todoRepository.Get(id);
             if (task == null)
             {
-                return NotFound("Эм такого дела нету :/");
+                return NotFound("Задача не найдена");
             }
 
-            task.IsCompleted = true;
-            TodoRepository.Update(task);
+            task.Status = Data.Enums.TaskStatus.Completed;
+            _todoRepository.Update(task);
 
-            return CreatedAtRoute("GetTask", new { id = task.Id }, task);
-        }
-
-        [HttpPut("incomplete/{id}")]
-        public IActionResult MarkTaskAsIncomplete(int id)
-        {
-            var task = TodoRepository.Get(id);
-            if (task == null)
-            {
-                return NotFound("Эм такого дела нету :/");
-            }
-
-            task.IsCompleted = false;
-            TodoRepository.Update(task);
-
-            return CreatedAtRoute("GetTask", new { id = task.Id }, task);
+            return Ok(task);
         }
 
         [HttpDelete("{id}")]
-        public IActionResult Delete(int Id)
+        public IActionResult Delete(int id)
         {
-            var deletedTodoItem = TodoRepository.Delete(Id);
-
-            if (deletedTodoItem == null)
-            {
-                return BadRequest("Эм такого дела нету :/");
-            }
-
-            return new ObjectResult(deletedTodoItem);
+            var deletedTask = _todoRepository.Delete(id);
+            return deletedTask == null ? NotFound("Задача не найдена") : Ok(deletedTask);
         }
 
-        public TodoController(ITodoRepository todoRepository)
+        [HttpPut("updateStatuses")]
+        public IActionResult UpdateTasksStatuses()
         {
-            TodoRepository = todoRepository;
+            var tasks = _todoRepository.Get().ToList();
+            var now = DateTime.UtcNow;
+
+            foreach (var task in tasks)
+            {
+                if (task.Status == Data.Enums.TaskStatus.Completed) continue;
+
+                if (task.Deadline.HasValue)
+                {
+                    task.Status = now > task.Deadline.Value
+                        ? Data.Enums.TaskStatus.Overdue
+                        : Data.Enums.TaskStatus.Active;
+                }
+            }
+
+            _todoRepository.UpdateRange(tasks);
+            return Ok();
         }
     }
 }

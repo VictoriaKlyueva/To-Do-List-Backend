@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using To_Do_List.Data;
@@ -11,9 +12,11 @@ using To_Do_List.Data;
 namespace To_Do_List.Migrations
 {
     [DbContext(typeof(EFTodoDBContext))]
-    partial class EFTodoDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250417055126_UpdateTaskModel")]
+    partial class UpdateTaskModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

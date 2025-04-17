@@ -8,6 +8,7 @@ namespace To_Do_List.Data.Repositories
         Models.Task Get(int id);
         void Create(Models.Task item);
         void Update(Models.Task item);
+        void UpdateRange(IEnumerable<Models.Task> items);
         Models.Task Delete(int id);
         void DeleteAll();
     }
