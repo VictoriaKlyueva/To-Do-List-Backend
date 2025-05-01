@@ -1,9 +1,13 @@
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json.Serialization;
 using To_Do_List.Data;
 using To_Do_List.Data.Repositories;
 using To_Do_List.Data.Repositories.To_Do_List.Data.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Timestamp format
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
 // Configure CORS
 builder.Services.AddCors(options =>
@@ -14,6 +18,13 @@ builder.Services.AddCors(options =>
                           .AllowAnyHeader());
 });
 
+// Configure enums converter
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    });
+
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddControllers();
@@ -22,7 +33,7 @@ builder.Services.AddDbContext<EFTodoDBContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"))
 );
 
-builder.Services.AddTransient<ITodoRepository, EFTodoRepository>();
+builder.Services.AddTransient<TodoRepository, TodoRepositoryImpl>();
 
 var app = builder.Build();
 

@@ -2,11 +2,11 @@
 {
     namespace To_Do_List.Data.Repositories
     {
-        public class EFTodoRepository : ITodoRepository
+        public class TodoRepositoryImpl : TodoRepository
         {
             private readonly EFTodoDBContext _context;
 
-            public EFTodoRepository(EFTodoDBContext context)
+            public TodoRepositoryImpl(EFTodoDBContext context)
             {
                 _context = context;
             }
@@ -23,7 +23,6 @@
 
             public void Create(Models.Task task)
             {
-                task.CreatedDate = DateTime.UtcNow;
                 _context.Tasks.Add(task);
                 _context.SaveChanges();
             }

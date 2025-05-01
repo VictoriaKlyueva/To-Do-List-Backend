@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using To_Do_List.Data.Dtos;
 using To_Do_List.Data.Repositories;
+using TaskStatus = To_Do_List.Data.Enums.TaskStatus;
 
 namespace To_Do_List.Controllers
 {
@@ -7,9 +9,9 @@ namespace To_Do_List.Controllers
     [ApiController]
     public class TodoController : ControllerBase
     {
-        private readonly ITodoRepository _todoRepository;
+        private readonly TodoRepository _todoRepository;
 
-        public TodoController(ITodoRepository todoRepository)
+        public TodoController(TodoRepository todoRepository)
         {
             _todoRepository = todoRepository;
         }
@@ -41,12 +43,22 @@ namespace To_Do_List.Controllers
         }
 
         [HttpPost]
-        public IActionResult Create([FromBody] Models.Task task)
+        public IActionResult Create([FromBody] TaskCreateDto taskDto)
         {
-            if (task == null || string.IsNullOrWhiteSpace(task.Title) || task.Title.Length < 4)
+            if (!ModelState.IsValid)
             {
-                return BadRequest("Название задачи обязательно и должно содержать минимум 4 символа");
+                return BadRequest(ModelState);
             }
+
+            var task = new Models.Task
+            {
+                Title = taskDto.Title,
+                Description = taskDto.Description,
+                Deadline = taskDto.Deadline,
+                Priority = taskDto.Priority,
+                Status = TaskStatus.Active,
+                CreatedDate = DateTime.SpecifyKind(DateTime.UtcNow, DateTimeKind.Utc)
+            };
 
             _todoRepository.Create(task);
             return CreatedAtRoute("GetTask", new { id = task.Id }, task);

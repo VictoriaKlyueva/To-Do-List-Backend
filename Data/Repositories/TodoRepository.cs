@@ -2,7 +2,7 @@
 
 namespace To_Do_List.Data.Repositories
 {
-    public interface ITodoRepository
+    public interface TodoRepository
     {
         IEnumerable<Models.Task> Get();
         Models.Task Get(int id);
